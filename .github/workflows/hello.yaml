@@ -1,0 +1,21 @@
+name: hello-world
+# trigger
+on:
+  push:
+    branches: ["stage"]
+
+env:
+  TEXT: "Luis Hidalgo"
+
+# pipeline
+jobs:
+  print: # job name
+  # ejecuta el pipeline en una VM Ubuntu
+    runs-on: ubuntu-latest
+
+    # Pasos a ejecutar
+    steps:
+      - name: print-to-screen
+        run: echo "Hello World ${{ env.TEXT }}!"
+      - name: print-secret
+        run: echo "Secret value ${{ secrets.SECRET_NAME }}"
