@@ -2,8 +2,7 @@ name: STAGE
 
 on:
   push:
-    branches:
-      - stage
+    branches: [ "stage" ]
 
 env:
   REGISTRY: lhidalgov
@@ -17,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3# checkout github code https://github.com/marketplace/actions/checkout
+        uses: actions/checkout@v3 # checkout github code https://github.com/marketplace/actions/checkout
         with:
           fetch-depth: 0
 
