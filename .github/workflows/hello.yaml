@@ -2,7 +2,7 @@ name: hello-world
 # trigger
 on:
   push:
-    branches: ["stage"]
+    branches: ["disable"]
 
 env:
   TEXT: "Luis Hidalgo"
