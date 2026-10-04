@@ -1,0 +1,92 @@
+name: PRODUCTION
+
+on:
+  pull_request:
+    branches: ["main"]
+    types: [closed]
+
+  workflow_dispatch:
+
+env:
+  REGISTRY: lhidalgov
+  IMAGE_NAME: kubelabs_demo
+  OPS_REPO: luhidalg/ops
+  OPS_BRANCH: main
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    outputs:
+      RELEASE_VERSION: ${{ steps.tagVersion.outputs.RELEASE_VERSION }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get release version
+        run: echo "RELEASE_VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Show release version
+        id: tagVersion
+        run: |
+          echo "Production image: ${{ env.RELEASE_VERSION }}"
+          echo "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" >> $GITHUB_OUTPUT
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push production image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
+
+  deploy:
+    name: Update production GitOps
+    runs-on: ubuntu-latest
+    needs: build
+
+    env:
+      VERSION: ${{ needs.build.outputs.RELEASE_VERSION }}
+
+    steps:
+      - name: Checkout OPS repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ env.OPS_REPO }}
+          ref: ${{ env.OPS_BRANCH }}
+          token: ${{ secrets.OPS_TOKEN }}
+
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "3.6.1"
+
+      - name: Update production image
+        run: |
+          cd web-app/overlays/production
+
+          kustomize edit set image \
+            KUSTOMIZED-INPUT=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+
+          kustomize build . > /tmp/production-manifests.yaml
+
+      - name: Commit OPS change
+        run: |
+          git config --local user.email "deploy-bot@storylabs.dev"
+          git config --local user.name "Web deploy-Bot"
+
+          git add web-app/overlays/production/kustomization.yaml
+
+          git diff --cached --quiet || \
+            git commit -m "Deploy production image ${{ env.VERSION }}"
+
+          git push origin ${{ env.OPS_BRANCH }}
