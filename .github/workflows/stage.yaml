@@ -42,7 +42,8 @@ jobs:
       - name: Build and push # https://github.com/marketplace/actions/build-and-push-docker-images
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./kubernetes-cicd-web
+          file: ./kubernetes-cicd-web/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
 
