@@ -72,7 +72,7 @@ jobs:
         run: |
           cd web-app/overlays/stage
 
-          kustomize edit set image KUSTOMIZE-INPUT=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+          kustomize edit set image KUSTOMIZED-INPUT=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
 
           kustomize build . > kustomized-apps.yml
           cat kustomized-apps.yml
