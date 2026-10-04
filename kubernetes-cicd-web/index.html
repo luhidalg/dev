@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kubernetes CI/CD Platform - Version 2</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #08111f;
+      --bg-secondary: #0d1728;
+      --card: #111f33;
+      --card-hover: #162943;
+      --border: #253851;
+      --text: #e8eef7;
+      --muted: #9db0c6;
+      --blue: #4da3ff;
+      --green: #38d996;
+      --yellow: #f4c95d;
+      --red: #ff6b6b;
+      --purple: #a879ff;
+    }
+
+    body {
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(77, 163, 255, 0.12), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(56, 217, 150, 0.08), transparent 25%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      width: min(1180px, 92%);
+      margin: auto;
+    }
+
+    /* Header */
+
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(8, 17, 31, 0.92);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .kube-logo {
+      width: 38px;
+      height: 38px;
+      border: 2px solid var(--blue);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--blue);
+      font-weight: 800;
+      box-shadow: 0 0 22px rgba(77, 163, 255, 0.25);
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 24px;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--blue);
+    }
+
+    /* Hero */
+
+    .hero {
+      padding: 100px 0 70px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      border: 1px solid rgba(77, 163, 255, 0.35);
+      background: rgba(77, 163, 255, 0.08);
+      color: var(--blue);
+      border-radius: 30px;
+      padding: 7px 16px;
+      margin-bottom: 22px;
+      font-size: 14px;
+    }
+
+    h1 {
+      font-size: clamp(42px, 7vw, 76px);
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 22px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      color: var(--muted);
+      max-width: 760px;
+      margin: auto;
+      font-size: 19px;
+    }
+
+    .hero-buttons {
+      margin-top: 32px;
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 13px 22px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #04111f;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(77, 163, 255, 0.25);
+    }
+
+    .btn-secondary {
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: var(--card);
+    }
+
+    .btn-secondary:hover {
+      background: var(--card-hover);
+    }
+
+    /* General */
+
+    section {
+      padding: 70px 0;
+    }
+
+    .section-label {
+      color: var(--blue);
+      text-transform: uppercase;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 36px;
+      margin-bottom: 15px;
+    }
+
+    .section-description {
+      color: var(--muted);
+      max-width: 720px;
+      margin-bottom: 38px;
+    }
+
+    /* Stats */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-top: 50px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Pipeline */
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    .pipeline-stage {
+      position: relative;
+      min-height: 210px;
+      padding: 24px;
+      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      transition: 0.25s;
+    }
+
+    .pipeline-stage:hover {
+      transform: translateY(-4px);
+      border-color: var(--blue);
+      background: var(--card-hover);
+    }
+
+    .stage-number {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: rgba(77, 163, 255, 0.12);
+      color: var(--blue);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .pipeline-stage h3 {
+      margin-bottom: 9px;
+    }
+
+    .pipeline-stage p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 18px;
+      color: var(--green);
+      font-size: 13px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+    }
+
+    /* Architecture */
+
+    .architecture {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .flow {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 35px;
+    }
+
+    .flow-item {
+      min-width: 150px;
+      text-align: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 22px;
+    }
+
+    .flow-arrow {
+      color: var(--blue);
+      font-size: 28px;
+    }
+
+    .flow-item strong {
+      display: block;
+    }
+
+    .flow-item small {
+      color: var(--muted);
+    }
+
+    /* Cards */
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      padding: 26px;
+      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 14px;
+    }
+
+    .card h3 {
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    /* Code */
+
+    .code-container {
+      margin-top: 30px;
+      background: #050c15;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .code-header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 13px 18px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+    }
+
+    pre {
+      padding: 24px;
+      overflow-x: auto;
+      color: #c9d8e8;
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .comment {
+      color: #6f879e;
+    }
+
+    .keyword {
+      color: var(--purple);
+    }
+
+    .value {
+      color: var(--green);
+    }
+
+    /* Environment */
+
+    .environment-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    .environment {
+      border-radius: 12px;
+      padding: 26px;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .env-dev {
+      border-top: 3px solid var(--blue);
+    }
+
+    .env-stage {
+      border-top: 3px solid var(--yellow);
+    }
+
+    .env-prod {
+      border-top: 3px solid var(--green);
+    }
+
+    .environment ul {
+      margin-top: 15px;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    /* Best practices */
+
+    .practice {
+      display: flex;
+      gap: 17px;
+      margin-bottom: 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .check {
+      color: var(--green);
+      font-size: 20px;
+    }
+
+    .practice p {
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Footer */
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 30px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 950px) {
+      .pipeline {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .grid,
+      .environment-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      nav ul {
+        display: none;
+      }
+
+      .pipeline,
+      .grid,
+      .environment-grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 70px;
+      }
+
+      .flow {
+        flex-direction: column;
+      }
+
+      .flow-arrow {
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="container">
+    <nav>
+      <div class="logo">
+        <div class="kube-logo">K8s</div>
+        Kubernetes CI/CD
+      </div>
+
+      <ul>
+        <li><a href="#pipeline">Pipeline</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#deployment">Deployment</a></li>
+        <li><a href="#practices">Best Practices</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+
+  <section class="hero">
+    <div class="container">
+
+      <div class="badge">
+        Cloud Native Deployment Platform
+      </div>
+
+      <h1>
+        Build. Test. Deploy.<br>
+        <span class="gradient-text">Kubernetes CI/CD</span>
+      </h1>
+
+      <p>
+        Automate application delivery from source code to production
+        using containers, continuous integration, automated testing,
+        Kubernetes deployments and GitOps workflows.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#pipeline" class="btn btn-primary">
+          Explore Pipeline
+        </a>
+
+        <a href="#deployment" class="btn btn-secondary">
+          View Deployment Example
+        </a>
+      </div>
+
+      <div class="stats">
+
+        <div class="stat">
+          <div class="stat-value">5</div>
+          <div class="stat-label">Pipeline Stages</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Environments</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-value">100%</div>
+          <div class="stat-label">Automated Deployment</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-value">24/7</div>
+          <div class="stat-label">Platform Availability</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- PIPELINE -->
+
+  <section id="pipeline">
+    <div class="container">
+
+      <div class="section-label">Delivery Pipeline</div>
+      <h2>CI/CD Workflow</h2>
+
+      <p class="section-description">
+        Every code change progresses through a controlled automated
+        pipeline before reaching the Kubernetes production environment.
+      </p>
+
+      <div class="pipeline">
+
+        <div class="pipeline-stage">
+          <div class="stage-number">01</div>
+          <h3>Source</h3>
+
+          <p>
+            Developers commit application code and Kubernetes
+            manifests into Git.
+          </p>
+
+          <div class="status">
+            <span class="status-dot"></span>
+            Repository Connected
+          </div>
+        </div>
+
+        <div class="pipeline-stage">
+          <div class="stage-number">02</div>
+          <h3>Build</h3>
+
+          <p>
+            The CI platform builds an immutable Docker container image.
+          </p>
+
+          <div class="status">
+            <span class="status-dot"></span>
+            Build Successful
+          </div>
+        </div>
+
+        <div class="pipeline-stage">
+          <div class="stage-number">03</div>
+          <h3>Test</h3>
+
+          <p>
+            Unit tests, vulnerability scans and configuration validation
+            execute automatically.
+          </p>
+
+          <div class="status">
+            <span class="status-dot"></span>
+            Tests Passed
+          </div>
+        </div>
+
+        <div class="pipeline-stage">
+          <div class="stage-number">04</div>
+          <h3>Registry</h3>
+
+          <p>
+            Validated container images are tagged and pushed to the
+            enterprise image registry.
+          </p>
+
+          <div class="status">
+            <span class="status-dot"></span>
+            Image Published
+          </div>
+        </div>
+
+        <div class="pipeline-stage">
+          <div class="stage-number">05</div>
+          <h3>Deploy</h3>
+
+          <p>
+            Kubernetes pulls the approved image and performs a controlled
+            rolling deployment.
+          </p>
+
+          <div class="status">
+            <span class="status-dot"></span>
+            Deployment Healthy
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ARCHITECTURE -->
+
+  <section class="architecture" id="architecture">
+    <div class="container">
+
+      <div class="section-label">Architecture</div>
+      <h2>From Git Commit to Kubernetes</h2>
+
+      <p class="section-description">
+        The pipeline integrates development, CI automation,
+        container security and Kubernetes orchestration.
+      </p>
+
+      <div class="flow">
+
+        <div class="flow-item">
+          <strong>Git</strong>
+          <small>Source Code</small>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-item">
+          <strong>CI Engine</strong>
+          <small>Build & Test</small>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-item">
+          <strong>Container Registry</strong>
+          <small>Docker Images</small>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-item">
+          <strong>CD / GitOps</strong>
+          <small>Deployment</small>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-item">
+          <strong>Kubernetes</strong>
+          <small>Application Pods</small>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- COMPONENTS -->
+
+  <section>
+    <div class="container">
+
+      <div class="section-label">Platform Components</div>
+      <h2>Cloud Native Toolchain</h2>
+
+      <div class="grid">
+
+        <div class="card">
+          <div class="card-icon">📦</div>
+          <h3>Containers</h3>
+          <p>
+            Applications are packaged into immutable container images,
+            providing consistent execution across environments.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">⚙️</div>
+          <h3>Continuous Integration</h3>
+          <p>
+            Every commit triggers automated builds, tests and security
+            validation.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">☸️</div>
+          <h3>Kubernetes</h3>
+          <p>
+            Kubernetes manages application scheduling, service discovery,
+            scaling and resilience.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔐</div>
+          <h3>Security</h3>
+          <p>
+            Images and manifests are validated before deployment to reduce
+            supply-chain risk.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📈</div>
+          <h3>Observability</h3>
+          <p>
+            Metrics, logs and health checks verify application health
+            throughout the deployment lifecycle.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔄</div>
+          <h3>GitOps</h3>
+          <p>
+            Git becomes the desired-state source of truth for Kubernetes
+            configuration.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ENVIRONMENTS -->
+
+  <section>
+    <div class="container">
+
+      <div class="section-label">Deployment Strategy</div>
+      <h2>Application Promotion</h2>
+
+      <p class="section-description">
+        Applications move through controlled environments before
+        production release.
+      </p>
+
+      <div class="environment-grid">
+
+        <div class="environment env-dev">
+          <h3>Development</h3>
+
+          <ul>
+            <li>Automatic deployment</li>
+            <li>Unit testing</li>
+            <li>Developer validation</li>
+            <li>Rapid iteration</li>
+          </ul>
+        </div>
+
+        <div class="environment env-stage">
+          <h3>Staging</h3>
+
+          <ul>
+            <li>Integration testing</li>
+            <li>Security scanning</li>
+            <li>Application validation</li>
+            <li>Release candidate</li>
+          </ul>
+        </div>
+
+        <div class="environment env-prod">
+          <h3>Production</h3>
+
+          <ul>
+            <li>Controlled release</li>
+            <li>Rolling deployment</li>
+            <li>Health validation</li>
+            <li>Automated rollback</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- KUBERNETES DEPLOYMENT -->
+
+  <section id="deployment" class="architecture">
+    <div class="container">
+
+      <div class="section-label">Kubernetes</div>
+      <h2>Deployment Manifest</h2>
+
+      <p class="section-description">
+        A Kubernetes Deployment defines the desired state of the
+        application running inside the cluster.
+      </p>
+
+      <div class="code-container">
+
+        <div class="code-header">
+          <span>deployment.yaml</span>
+          <span>Kubernetes</span>
+        </div>
+
+<pre><span class="keyword">apiVersion:</span> apps/v1
+<span class="keyword">kind:</span> Deployment
+
+<span class="keyword">metadata:</span>
+  name: cicd-demo
+
+<span class="keyword">spec:</span>
+  replicas: <span class="value">3</span>
+
+  selector:
+    matchLabels:
+      app: cicd-demo
+
+  template:
+    metadata:
+      labels:
+        app: cicd-demo
+
+    spec:
+      containers:
+
+      - name: web
+        image: registry.example.com/cicd-demo:v1.0.0
+
+        ports:
+        - containerPort: <span class="value">8080</span>
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: <span class="value">8080</span>
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: <span class="value">8080</span></pre>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- COMMANDS -->
+
+  <section>
+    <div class="container">
+
+      <div class="section-label">Operations</div>
+      <h2>Useful Kubernetes Commands</h2>
+
+      <div class="code-container">
+
+        <div class="code-header">
+          <span>Terminal</span>
+          <span>kubectl</span>
+        </div>
+
+<pre><span class="comment"># View Kubernetes nodes</span>
+kubectl get nodes
+
+<span class="comment"># View running pods</span>
+kubectl get pods -A
+
+<span class="comment"># Deploy application</span>
+kubectl apply -f deployment.yaml
+
+<span class="comment"># Check deployment status</span>
+kubectl rollout status deployment/cicd-demo
+
+<span class="comment"># View application logs</span>
+kubectl logs -f deployment/cicd-demo
+
+<span class="comment"># Scale application</span>
+kubectl scale deployment cicd-demo --replicas=5
+
+<span class="comment"># Roll back a failed release</span>
+kubectl rollout undo deployment/cicd-demo</pre>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- BEST PRACTICES -->
+
+  <section id="practices">
+    <div class="container">
+
+      <div class="section-label">Engineering Standards</div>
+      <h2>CI/CD Best Practices</h2>
+
+      <div class="practice">
+        <div class="check">✓</div>
+        <div>
+          <strong>Use immutable container images</strong>
+          <p>
+            Deploy versioned images instead of modifying running containers.
+          </p>
+        </div>
+      </div>
+
+      <div class="practice">
+        <div class="check">✓</div>
+        <div>
+          <strong>Never deploy using the latest tag</strong>
+          <p>
+            Pin deployments to explicit application versions or image digests.
+          </p>
+        </div>
+      </div>
+
+      <div class="practice">
+        <div class="check">✓</div>
+        <div>
+          <strong>Scan container images</strong>
+          <p>
+            Detect vulnerable libraries and operating-system packages before
+            production deployment.
+          </p>
+        </div>
+      </div>
+
+      <div class="practice">
+        <div class="check">✓</div>
+        <div>
+          <strong>Use readiness and liveness probes</strong>
+          <p>
+            Kubernetes should automatically identify unhealthy application
+            instances.
+          </p>
+        </div>
+      </div>
+
+      <div class="practice">
+        <div class="check">✓</div>
+        <div>
+          <strong>Use Git as the source of truth</strong>
+          <p>
+            Infrastructure and Kubernetes configuration should be version
+            controlled and auditable.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+
+<footer>
+  <div class="container">
+    Kubernetes CI/CD Engineering Platform |
+    Automated • Secure • Scalable
+  </div>
+</footer>
+
+</body>
+</html>
