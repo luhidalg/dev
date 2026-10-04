@@ -92,6 +92,16 @@ jobs:
            git config --local user.email "deploy-bot@storylabs.dev"
            git config --local user.name "Web deploy-Bot"
 
-           git add .
-           git commit -m "New image version ${{ env.OPS_BRANCH }}"
-           git push --force origin ${{ env.OPS_BRANCH }}
+           git add web-app/overlays/stage/kustomization.yaml
+          
+           if git diff --cached --quiet; then
+             echo "OPS already contains image version ${{ env.VERSION }}"
+             exit 0
+           fi
+
+           git commit -m "Deploy stage image ${{ env.VERSION }}"
+           git push origin ${{ env.OPS_BRANCH }}
+
+#           git add .
+#           git commit -m "New image version ${{ env.OPS_BRANCH }}"
+#           git push --force origin ${{ env.OPS_BRANCH }}
